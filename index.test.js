@@ -18,7 +18,7 @@ describe('version-reporter', () => {
 
   it('has the correct keys', () => {
     expect(versionReporter).to.have.keys([
-      'getLastestGitCommit',
+      'getLatestGitCommit',
       'getLatestGitTag',
       'getVersionFromFile',
       'getVersionFromPackageJson',
@@ -37,8 +37,10 @@ describe('version-reporter', () => {
         const gitLogLastCommit = exec('git log -n1 --format=%H');
         gitLogLastCommit.stdout.on('data', (data) => (gitHash += data));
         gitLogLastCommit.on('exit', () => {
-          expect(fn()).to.eql(gitHash);
-          done();
+          fn().then((result) => {
+            expect(result).to.eql(gitHash);
+            done();
+          });
         });
       }
     });
@@ -69,40 +71,44 @@ describe('version-reporter', () => {
             createGitTag.on('exit', () => {
               const checkTag = exec('git describe --abbrev=0 --tags');
               checkTag.stdout.on('data', (data) => {
-                actualGitTags[0] += data;
+                actualGitTags[0] += data.toString().trim();
               });
               checkTag.on('exit', () => {
-                expect(actualGitTags[0].trim()).to.eql('123456789');
-                try {
-                  observedGitTags[0] = fn();
-                  expect(actualGitTags[0]).to.eql(observedGitTags[0]);
-                } catch (ex) {
-                  cleanup();
-                  throw ex;
-                }
-                const createNewCommit = exec('git commit -m \'_ testing commit\' --allow-empty'); // eslint-disable-line max-len
-                createNewCommit.on('exit', () => {
-                  const createNextGitTag = exec('git tag 123456790');
-                  createNextGitTag.on('exit', () => {
-                    const checkTagAgain = exec('git describe --abbrev=0 --tags'); // eslint-disable-line max-len
-                    checkTagAgain.stdout.on('data', (data) => {
-                      actualGitTags[1] += data;
-                    });
-                    checkTagAgain.on('exit', () => {
-                      expect(actualGitTags[1].trim()).to.eql('123456790');
-                      try {
-                        observedGitTags[1] = fn();
-                        expect(actualGitTags[1]).to.eql(observedGitTags[1]);
-                      } catch (ex) {
-                        cleanup();
-                        throw ex;
-                      }
-                      const resetTags = exec('git tag -d 123456789 && git tag -d 123456790'); // eslint-disable-line max-len
-                      resetTags.on('exit', () => {
-                        const resetCommit = exec(`git reset --hard ${gitHash}`);
-                        resetCommit.on('exit', () => {
-                          const popStashChanges = exec('git stash pop');
-                          popStashChanges.on('exit', done);
+                expect(actualGitTags[0]).to.eql('123456789');
+                fn().then((result) => {
+                  try {
+                    observedGitTags[0] = result;
+                    expect(actualGitTags[0]).to.eql(observedGitTags[0]);
+                  } catch (ex) {
+                    cleanup();
+                    done(ex);
+                  }
+                  const createNewCommit = exec('git commit -m "_ testing commit" --allow-empty'); // eslint-disable-line max-len
+                  createNewCommit.on('exit', (code) => {
+                    const createNextGitTag = exec('git tag 123456790');
+                    createNextGitTag.on('exit', () => {
+                      const checkTagAgain = exec('git describe --abbrev=0 --tags'); // eslint-disable-line max-len
+                      checkTagAgain.stdout.on('data', (data) => {
+                        actualGitTags[1] += data.toString().trim();
+                      });
+                      checkTagAgain.on('exit', () => {
+                        expect(actualGitTags[1]).to.eql('123456790');
+                        fn().then((result) => {
+                          try {
+                            observedGitTags[1] = result;
+                            expect(actualGitTags[1]).to.eql(observedGitTags[1]);
+                          } catch (ex) {
+                            cleanup();
+                            done(ex);
+                          }
+                          const resetTags = exec('git tag -d 123456789 && git tag -d 123456790'); // eslint-disable-line max-len
+                          resetTags.on('exit', () => {
+                            const resetCommit = exec(`git reset --hard ${gitHash}`);
+                            resetCommit.on('exit', () => {
+                              const popStashChanges = exec('git stash pop');
+                              popStashChanges.on('exit', done);
+                            });
+                          });
                         });
                       });
                     });
@@ -119,17 +125,22 @@ describe('version-reporter', () => {
   describe('.getVersionFromFile()', () => {
     const fn = versionReporter.getVersionFromFile;
 
-    it('works as expected', () => {
+    it('works as expected', (done) => {
       const pathToVersionFile = path.join(
         process.cwd(), '/.test_version_file_version_repoter'
       );
       fs.writeFileSync(pathToVersionFile, '1.2.3');
       try {
-        expect(fn(pathToVersionFile)).to.eql('1.2.3');
-        fs.unlinkSync(pathToVersionFile);
+        fn(pathToVersionFile).then((result) => {
+          expect(result).to.eql('1.2.3');
+          fs.unlink(pathToVersionFile, done);
+        }).catch((err) => {
+          fs.unlinkSync(pathToVersionFile);
+          done(err);
+        });
       } catch (ex) {
         fs.unlinkSync(pathToVersionFile);
-        throw ex;
+        done(ex);
       }
     });
   });
@@ -141,7 +152,9 @@ describe('version-reporter', () => {
       const version = require(
         path.join(process.cwd(), '/package.json')
       ).version;
-      expect(fn()).to.eql(version);
+      return fn().then((result) => {
+        expect(result).to.eql(version);
+      });
     });
   });
 });
