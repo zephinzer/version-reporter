@@ -103,7 +103,7 @@ describe('version-reporter', () => {
                           }
                           const resetTags = exec('git tag -d 123456789 && git tag -d 123456790'); // eslint-disable-line max-len
                           resetTags.on('exit', () => {
-                            const resetCommit = exec(`git reset --hard ${gitHash}`);
+                            const resetCommit = exec(`git reset --hard ${gitHash}`); // eslint-disable-line max-len
                             resetCommit.on('exit', () => {
                               const popStashChanges = exec('git stash pop');
                               popStashChanges.on('exit', done);
