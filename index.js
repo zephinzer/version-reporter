@@ -35,7 +35,7 @@ versionReporter.getLatestGitTag = () => {
     });
     gitTag.stderr.on('data', (error) => {
       errorDetails += error;
-    })
+    });
     gitTag.on('exit', (code) => {
       if (code == 0) {
         resolve(tag.trim());

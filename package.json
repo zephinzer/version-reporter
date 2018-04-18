@@ -6,7 +6,8 @@
   "scripts": {
     "lint": "eslint .",
     "test": "docker build --tag version-reporter:latest . && docker run version-reporter:latest",
-    "actual-test-command": "mocha --recursive ./**/*.test.js"
+    "actual-test-command": "mocha --recursive ./**/*.test.js",
+    "prepublish": "npm run test && npm run lint"
   },
   "keywords": [],
   "author": "",
