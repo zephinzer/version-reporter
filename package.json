@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
-    "test": "mocha --recursive ./**/*.test.js"
+    "test": "docker build --tag version-reporter:latest . && docker run version-reporter:latest",
+    "actual-test-command": "mocha --recursive ./**/*.test.js"
   },
   "keywords": [],
   "author": "",

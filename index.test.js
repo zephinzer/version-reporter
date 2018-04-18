@@ -55,7 +55,9 @@ describe('version-reporter', () => {
         let actualGitTags = ['', ''];
         let observedGitTags = ['', ''];
         let gitHash = '';
-        const cleanup = exec.bind(null, 'set -e; git reset --hard ${gitHash}; git stash pop; git tag -d 123456789; git tag -d 123456790'); // eslint-disable-line max-len
+        const cleanup = () => {
+          exec(`set -e; git tag -d 123456789; git tag -d 123456790; git reset --hard ${gitHash}; git stash pop;`); // eslint-disable-line max-len
+        };
         const stashCurrentChanges = exec('git stash');
         stashCurrentChanges.on('exit', () => {
           const getCommitHash = exec('git log -n1 --format=%H');
@@ -122,7 +124,12 @@ describe('version-reporter', () => {
         process.cwd(), '/.test_version_file_version_repoter'
       );
       fs.writeFileSync(pathToVersionFile, '1.2.3');
-      expect(fn(pathToVersionFile)).to.eql('1.2.3');
+      try {
+        expect(fn(pathToVersionFile)).to.eql('1.2.3');
+        fs.unlinkSync(pathToVersionFile);
+      } catch (ex) {
+        fs.unlinkSync(pathToVersionFile);
+      }
     });
   });
 
