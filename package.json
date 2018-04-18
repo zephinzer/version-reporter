@@ -1,7 +1,7 @@
 {
   "name": "version-reporter",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "A version reporter module for Node based on Git commits, tags, version files or package.json.",
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
@@ -10,7 +10,7 @@
     "prepublish": "npm run test && npm run lint"
   },
   "keywords": [],
-  "author": "",
+  "author": "zephinzer",
   "license": "MIT",
   "devDependencies": {
     "chai": "^4.1.2",
