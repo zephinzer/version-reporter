@@ -25,6 +25,8 @@ versionReporter.getVersionFromPackageJson().then((packageJsonVersion) => console
 npm install version-reporter;
 ```
 
+Link to NPM package: https://www.npmjs.com/package/version-reporter
+
 ## Development
 
 Fork this, make your changes and submit a pull request.
