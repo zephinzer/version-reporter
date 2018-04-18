@@ -25,6 +25,12 @@ versionReporter.getVersionFromPackageJson().then((packageJsonVersion) => console
 npm install version-reporter;
 ```
 
+## Development
+
+Fork this, make your changes and submit a pull request.
+
+Run tests with `npm test` and `npm run lint`.
+
 ## License
 
 Copyright 2018 [@zephinzer](https://github.com/zephinzer)

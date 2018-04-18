@@ -13,7 +13,7 @@ describe('version-reporter', () => {
     checkIfGitLogExists.on('exit', (code) => {
       gitExists = (code === 0);
       done();
-    })
+    });
   });
 
   it('has the correct keys', () => {
@@ -30,14 +30,14 @@ describe('version-reporter', () => {
 
     it('works as expected', function(done) {
       if (!gitExists) {
-        this.skip();
+        this.skip(); // eslint-disable-line no-invalid-this
         done();
       } else {
         let gitHash = '';
         const gitLogLastCommit = exec('git log -n1 --format=%H');
-        gitLogLastCommit.stdout.on('data', (data) => (gitHash += data))
+        gitLogLastCommit.stdout.on('data', (data) => (gitHash += data));
         gitLogLastCommit.on('exit', () => {
-          expect(versionReporter.getLatestGitCommit()).to.eql(gitHash);
+          expect(fn()).to.eql(gitHash);
           done();
         });
       }
@@ -49,13 +49,13 @@ describe('version-reporter', () => {
 
     it('works as expected', function(done) {
       if (!gitExists) {
-        this.skip();
+        this.skip(); // eslint-disable-line no-invalid-this
         done();
       } else {
         let actualGitTags = ['', ''];
         let observedGitTags = ['', ''];
         let gitHash = '';
-        const cleanup = exec.bind(this, 'set -e; git reset --hard ${gitHash}; git stash pop; git tag -d 123456789; git tag -d 123456790');
+        const cleanup = exec.bind(null, 'set -e; git reset --hard ${gitHash}; git stash pop; git tag -d 123456789; git tag -d 123456790'); // eslint-disable-line max-len
         const stashCurrentChanges = exec('git stash');
         stashCurrentChanges.on('exit', () => {
           const getCommitHash = exec('git log -n1 --format=%H');
@@ -78,11 +78,11 @@ describe('version-reporter', () => {
                   cleanup();
                   throw ex;
                 }
-                const createNewCommit = exec('git commit -m \'_ testing commit\' --allow-empty');
+                const createNewCommit = exec('git commit -m \'_ testing commit\' --allow-empty'); // eslint-disable-line max-len
                 createNewCommit.on('exit', () => {
                   const createNextGitTag = exec('git tag 123456790');
                   createNextGitTag.on('exit', () => {
-                    const checkTagAgain = exec('git describe --abbrev=0 --tags');
+                    const checkTagAgain = exec('git describe --abbrev=0 --tags'); // eslint-disable-line max-len
                     checkTagAgain.stdout.on('data', (data) => {
                       actualGitTags[1] += data;
                     });
@@ -95,7 +95,7 @@ describe('version-reporter', () => {
                         cleanup();
                         throw ex;
                       }
-                      const resetTags = exec('git tag -d 123456789 && git tag -d 123456790');
+                      const resetTags = exec('git tag -d 123456789 && git tag -d 123456790'); // eslint-disable-line max-len
                       resetTags.on('exit', () => {
                         const resetCommit = exec(`git reset --hard ${gitHash}`);
                         resetCommit.on('exit', () => {
@@ -108,8 +108,8 @@ describe('version-reporter', () => {
                 });
               });
             });
-          })
-        })
+          });
+        });
       }
     });
   });
@@ -118,7 +118,9 @@ describe('version-reporter', () => {
     const fn = versionReporter.getVersionFromFile;
 
     it('works as expected', () => {
-      const pathToVersionFile = path.join(process.cwd(), '/.test_version_file_version_repoter');
+      const pathToVersionFile = path.join(
+        process.cwd(), '/.test_version_file_version_repoter'
+      );
       fs.writeFileSync(pathToVersionFile, '1.2.3');
       expect(fn(pathToVersionFile)).to.eql('1.2.3');
     });
@@ -128,7 +130,9 @@ describe('version-reporter', () => {
     const fn = versionReporter.getVersionFromPackageJson;
 
     it('works as expected', () => {
-      const version = require(path.join(process.cwd(), '/package.json')).version;
+      const version = require(
+        path.join(process.cwd(), '/package.json')
+      ).version;
       expect(fn()).to.eql(version);
     });
   });
