@@ -129,6 +129,7 @@ describe('version-reporter', () => {
         fs.unlinkSync(pathToVersionFile);
       } catch (ex) {
         fs.unlinkSync(pathToVersionFile);
+        throw ex;
       }
     });
   });
