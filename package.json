@@ -1,6 +1,6 @@
 {
   "name": "version-reporter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A version reporter module for Node based on Git commits, tags, version files or package.json.",
   "main": "index.js",
   "scripts": {
@@ -10,6 +10,10 @@
     "prepublish": "npm run test && npm run lint"
   },
   "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zephinzer/version-reporter"
+  },
   "author": "zephinzer",
   "license": "MIT",
   "devDependencies": {
